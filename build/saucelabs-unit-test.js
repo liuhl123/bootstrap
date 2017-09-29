@@ -57,23 +57,26 @@ const waitingCallback = (error, body) => {
   }
 }
 
+let i = 0
 browsersFile.forEach((tmpBrowser) => {
-  setTimeout(() => {
-    const broPlatform = typeof tmpBrowser.platform === 'undefined' ? tmpBrowser.platformName : tmpBrowser.platform
-    jsUnitSaucelabs.start([[broPlatform, tmpBrowser.browserName, tmpBrowser.version]], testURL, 'qunit', (error, success) => {
-      if (typeof success !== 'undefined') {
-        const taskIds = success['js tests']
+  const broPlatform = typeof tmpBrowser.platform === 'undefined' ? tmpBrowser.platformName : tmpBrowser.platform
+  jsUnitSaucelabs.start([[broPlatform, tmpBrowser.browserName, tmpBrowser.version]], testURL, 'qunit', (error, success) => {
+    if (typeof success !== 'undefined') {
+      const taskIds = success['js tests']
 
-        if (!taskIds || !taskIds.length) {
-          throw new Error('Error starting tests through SauceLabs API')
-        }
-
-        taskIds.forEach((id) => {
-          jsUnitSaucelabs.getStatus(id, waitingCallback)
-        })
-      } else {
-        console.error(error)
+      if (!taskIds || !taskIds.length) {
+        throw new Error('Error starting tests through SauceLabs API')
       }
-    })
-  }, 1000)
+
+      taskIds.forEach((id) => {
+        jsUnitSaucelabs.getStatus(id, waitingCallback)
+      })
+    } else {
+      console.error(error)
+    }
+  })
+  i++
+  if (i === 2) {
+    return
+  }
 })
